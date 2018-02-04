@@ -1,92 +1,60 @@
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const webpack = require('webpack')
-// const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const merge = require('webpack-merge');
+const path = require('path');
+const webpack = require('webpack');
 
-module.exports = {
-  devtool: 'inline-source-map',
-  entry: [
-    'react-hot-loader/patch',
-    path.join(__dirname, 'src/index.js')
-  ],
-  output: {
-    path: path.join(__dirname, './dist'),
-    filename: '[name].[hash].js'
-  },
-  module: {
-    rules: [
-      { 
-        test: /\.(js|jsx)$/, 
-        include: path.resolve(__dirname, 'src'), 
-        exclude: path.resolve(__dirname, 'node_modules'),
-        use: ['babel-loader?cacheDirectory=true']
-      },
-      { 
-        test: /\.css$/, 
-        use: [
-          'style-loader', 
-          { 
-            loader: 'css-loader', 
-            options: { importLoaders: 1 } 
-          }, 
-          {
-            loader: 'postcss-loader',
-            options: {
-              ident: 'postcss',
-              plugins: (loader) => [
-                require('autoprefixer')()
-              ]
-            }
-          }
+const commonConfig = require('./webpack.common.config.js');
+
+const devConfig = {
+    devtool: 'inline-source-map',
+    entry: {
+        app: [
+            'babel-polyfill',
+            'react-hot-loader/patch',
+            path.join(__dirname, 'src/index.js')
         ]
-      },
-      {
-        test: /\.less$/,
-        use: [
-          'style-loader', 
-          'css-loader',
+    },
+    output: {
+        /*这里本来应该是[chunkhash]的，但是由于[chunkhash]和react-hot-loader不兼容。只能妥协*/
+        filename: '[name].[hash].js'
+    },
+    module: {
+        rules: [
           {
-            loader: 'postcss-loader',
-            options: {
-              ident: 'postcss',
-              plugins: (loader) => [
-                require('autoprefixer')()
-              ]
-            }
+            test: /\.css$/,
+            use: [
+              "style-loader", 
+              "css-loader?modules&localIdentName=[local]-[hash:base64:5]", 
+              "postcss-loader"
+            ]
           },
-          'less-loader'
-        ]
-      },
-      { 
-        test:/\.(png|gif|jpg|jpeg|bmp)$/, 
-        use: [{
-          loader: 'url-loader',
-          options: {
-            limit: 8192
+          {
+            test: /\.less$/,
+            use: [
+              'style-loader', 
+              'css-loader',
+              'postcss-loader',
+              'less-loader'
+            ]
           }
-        }]
-      }
-    ]
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: path.join(__dirname, 'src/index.html')
-    })
-  ],
-  resolve: {
-    alias: {
-      pages: path.join(__dirname, 'src/pages'),
-      components: path.join(__dirname, 'src/components'),
-      router: path.join(__dirname, 'src/router'),
-      actions: path.join(__dirname, 'src/redux/actions'),
-      reducers: path.join(__dirname, 'src/redux/reducers'),
+        ]
+    },
+    devServer: {
+        port: 8000,
+        contentBase: path.join(__dirname, './dist'),
+        historyApiFallback: true,
+        host: '0.0.0.0',
+        // proxy: {
+        //     "/api/*": "https://5a689ab178f25e00122ad1ce.mockapi.io/$1"
+        // }
     }
-  },
-  devServer: {
-    port: 8000,
-    contentBase: path.join(__dirname, './dist'),
-    historyApiFallback: true,
-    host: '0.0.0.0'
-  }
-}
+};
+
+module.exports = merge({
+    customizeArray(a, b, key) {
+        /*entry.app不合并，全替换*/
+        if (key === 'entry.app') {
+            return b;
+        }
+        return undefined;
+    }
+})(commonConfig, devConfig);
