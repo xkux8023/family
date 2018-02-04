@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {increment, decrement, reset} from '../../redux/actions/counter'
+import {increment, decrement, reset} from 'actions/counter'
 
 import {connect} from 'react-redux'
 

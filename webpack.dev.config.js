@@ -1,4 +1,6 @@
 const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const webpack = require('webpack')
 // const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 module.exports = {
@@ -9,7 +11,7 @@ module.exports = {
   ],
   output: {
     path: path.join(__dirname, './dist'),
-    filename: 'bundle.js'
+    filename: '[name].[hash].js'
   },
   module: {
     rules: [
@@ -66,11 +68,23 @@ module.exports = {
       }
     ]
   },
-  // plugins: [
-  //   new ExtractTextPlugin('style.css')
-  // ],
+  plugins: [
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: path.join(__dirname, 'src/index.html')
+    })
+  ],
+  resolve: {
+    alias: {
+      pages: path.join(__dirname, 'src/pages'),
+      components: path.join(__dirname, 'src/components'),
+      router: path.join(__dirname, 'src/router'),
+      actions: path.join(__dirname, 'src/redux/actions'),
+      reducers: path.join(__dirname, 'src/redux/reducers'),
+    }
+  },
   devServer: {
-    port: 8080,
+    port: 8000,
     contentBase: path.join(__dirname, './dist'),
     historyApiFallback: true,
     host: '0.0.0.0'
