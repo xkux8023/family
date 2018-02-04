@@ -1,0 +1,6 @@
+   
+    .pagebox{
+        display: flex;
+        color: red;
+        border: 1px solid red;
+    }
